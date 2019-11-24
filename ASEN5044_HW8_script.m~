@@ -116,8 +116,7 @@ end
 xlabel('time [s]');
 subplot(4,1,1); ylabel('\xi [m]')
 subplot(4,1,2); ylabel('\xiDot [m/s]')
-subplot(4,1,3); ylabel('eta [m]')
-subplot(4,1,4); ylabel('\etaDot [m/s]')
+subplot(4,1,3); ylabel('
 legend('component estimate','+/- 2\sigma')
 suptitle('(b.ii) Kalman on aircraft A')
 
