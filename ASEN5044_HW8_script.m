@@ -77,12 +77,13 @@ title('(b.i) Aircraft A Simulated Measurements')
 xlabel('time [s]'); ylabel('2D pseudo-measurements [m]')
 xticks([0 10 20 30 40])
 xticklabels({'0','5','10','15','20'})
-plot(1:1:40,yA(1,1:40),'-')
-plot(1:1:40,yA(2,1:40),'-')
-legend('yA_1','yA_2')
+plot(1:40,yA(1,1:40),'-','LineWidth',1.5)
+plot(1:40,yA(2,1:40),'-','LineWidth',1.5)
+xlim([1 40]);
+legend('yA_1 (East)','yA_2 (North)','Location','Northwest')
 saveas(fig,'ASEN5044_HW8_bi.png','png');
 
-%b)ii
+%b)i
 muA = [0, 85*cos(pi/4), 0, -85*sin(pi/4)]';
 PA = 900*diag([10,2,10,2]);
 % IMPLEMENT KALMAN HERE %
@@ -95,6 +96,7 @@ P_minus(:,:,1) = FA*PA*FA' + QA;
 P_plus(:,:,1) = PA;
 
 %now iterate through the k's
+sigma = zeros(4,length(T)); K = zeros(4,2,length(T));
 for k=1:(T-1)
     x_minus(:,k+1) = FA*x_plus(:,k);
     P_minus(:,:,k+1) = FA*P_plus(:,:,k)*FA' + QA;
@@ -103,10 +105,10 @@ for k=1:(T-1)
     x_plus(:,k+1) = x_minus(:,k+1) + K(:,:,k+1) * (yA(:,k+1)-H*x_minus(:,k+1));
     P_plus(:,:,k+1) = (eye(4)-K(:,:,k+1)*H)*P_minus(:,:,k+1);
     
-    sigma(1,k+1) = 2*sqrt(P_plus(1,1,k+1));
-    sigma(2,k+1) = 2*sqrt(P_plus(2,2,k+1));
-    sigma(3,k+1) = 2*sqrt(P_plus(3,3,k+1));
-    sigma(4,k+1) = 2*sqrt(P_plus(4,4,k+1));
+    sigma(1,k+1) = sqrt(P_plus(1,1,k+1));
+    sigma(2,k+1) = sqrt(P_plus(2,2,k+1));
+    sigma(3,k+1) = sqrt(P_plus(3,3,k+1));
+    sigma(4,k+1) = sqrt(P_plus(4,4,k+1));
 end
 
 fig = figure; hold on;
@@ -114,9 +116,9 @@ set(fig, 'Position', [100 100 900 600]);
 sgtitle('(b.ii) Kalman Filter of Aircraft A')
 for i=1:4
     subplot(4,1,i); hold on; grid on; grid minor;
-    plot(1:1:200,x_plus(i,:),'b-')
-    plot(1:1:200,x_plus(i,:)+sigma(i,:),'k--')
-    plot(1:1:200,x_plus(i,:)-sigma(i,:),'k--')
+    plot(1:200,x_plus(i,:),'b-')
+    plot(1:200,x_plus(i,:)+2*sigma(i,:),'k--')
+    plot(1:200,x_plus(i,:)-2*sigma(i,:),'k--')
     xticks([0 20 40 60 80 100 120 140 160 180 200])
     xticklabels({'0','10','20','30','40','50','60','70','80','90','100'})
 end
@@ -125,7 +127,7 @@ subplot(4,1,1); ylabel('\xi [m]')
 subplot(4,1,2); ylabel('\xiDot [m/s]')
 subplot(4,1,3); ylabel('eta [m]')
 subplot(4,1,4); ylabel('\etaDot [m/s]')
-legend('component estimate','+/- 2\sigma')
+legend('Filter Estimate','+/- 2\sigma')
 saveas(fig,'ASEN5044_HW8_bii.png','png');
 
 
@@ -184,6 +186,7 @@ x_minus(:,1) = FS*x_plus(:,1);
 P_minus(:,:,1) = FS*[PA zeros(4); zeros(4) PB]*FS' + QS;
 P_plus(:,:,1) = [PA zeros(4); zeros(4) PB];
 
+K = zeros(8,4,length(T));
 for k=1:(T-1)
     x_minus(:,k+1) = FS*x_plus(:,k);
     P_minus(:,:,k+1) = FS*P_plus(:,:,k)*FS' + QS;
@@ -192,29 +195,36 @@ for k=1:(T-1)
     x_plus(:,k+1) = x_minus(:,k+1) + K(:,:,k+1) * (yS(:,k+1)-HS*x_minus(:,k+1));
     P_plus(:,:,k+1) = (eye(8)-K(:,:,k+1)*HS)*P_minus(:,:,k+1);
     
-    sigma(1,k+1) = 2*sqrt(P_plus(1,1,k+1));
-    sigma(2,k+1) = 2*sqrt(P_plus(2,2,k+1));
-    sigma(3,k+1) = 2*sqrt(P_plus(3,3,k+1));
-    sigma(4,k+1) = 2*sqrt(P_plus(4,4,k+1));
-    sigma(5,k+1) = 2*sqrt(P_plus(5,5,k+1));
-    sigma(6,k+1) = 2*sqrt(P_plus(6,6,k+1));
-    sigma(7,k+1) = 2*sqrt(P_plus(7,7,k+1));
-    sigma(8,k+1) = 2*sqrt(P_plus(8,8,k+1));
+    sigma(1,k+1) = sqrt(P_plus(1,1,k+1));
+    sigma(2,k+1) = sqrt(P_plus(2,2,k+1));
+    sigma(3,k+1) = sqrt(P_plus(3,3,k+1));
+    sigma(4,k+1) = sqrt(P_plus(4,4,k+1));
+    sigma(5,k+1) = sqrt(P_plus(5,5,k+1));
+    sigma(6,k+1) = sqrt(P_plus(6,6,k+1));
+    sigma(7,k+1) = sqrt(P_plus(7,7,k+1));
+    sigma(8,k+1) = sqrt(P_plus(8,8,k+1));
 end
 
 fig = figure; hold on;
 set(fig, 'Position', [100 100 900 600]);
-sgtitle('(c.i) Position of Aircraft A and B')
+sgtitle('(c.i) Position Error of Aircraft A and B')
 for i=1:4
-    subplot(2,2,i); hold on; grid on; grid minor;
-    plot(1:1:200, x_plus(2*i-1,:),'b-')
-    plot(1:1:200, x_plus(2*i-1,:) + sigma(2*i-1,:),'k--')
-    plot(1:1:200, x_plus(2*i-1,:) - sigma(2*i-1,:),'k--')
+    subplot(4,1,i); hold on; grid on; grid minor;
+    if i == 1
+        plot(1:200, x_plus(2*i-1,:)-xadouble_truth(1,2:201),'b-');
+    elseif i == 2
+        plot(1:200, x_plus(2*i-1,:)-xadouble_truth(3,2:201),'b-');
+    elseif i == 3
+        plot(1:200, x_plus(2*i-1,:)-xbdouble_truth(1,2:201),'m-');
+    else
+        plot(1:200, x_plus(2*i-1,:)-xbdouble_truth(3,2:201),'m-');
+    end
+    plot([1 200],[0 0],'k--');
     xticks([0 20 40 60 80 100 120 140 160 180 200])
     xticklabels({'0','10','20','30','40','50','60','70','80','90','100'})
 end
-subplot(2,2,1); ylabel('\xi_A [m]'); legend('state component','+/- 2\sigma')
-subplot(2,2,2); ylabel('\eta_A [m]'); xlabel('time [s]');
-subplot(2,2,3); ylabel('\xi_B [m]'); xlabel('time [s]');
-subplot(2,2,4); ylabel('\eta_B [m]'); xlabel('time [s');
+subplot(4,1,1); ylabel('\xi_A [m]');
+subplot(4,1,2); ylabel('\eta_A [m]');
+subplot(4,1,3); ylabel('\xi_B [m]');
+subplot(4,1,4); ylabel('\eta_B [m]'); xlabel('time [s]');
 saveas(fig,'ASEN5044_HW8_ci.png','png');
