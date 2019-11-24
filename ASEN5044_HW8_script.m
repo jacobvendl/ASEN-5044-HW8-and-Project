@@ -6,6 +6,8 @@
 %==========================================================================
 close all; clear all; clc
 
+%% Problem setup
+
 qw = 10;            % (m/s)^2
 dt = 0.5;           % sec
 OmegaA = 0.045;     % rad/s
@@ -31,8 +33,7 @@ AB = [0 1 0 0;
     0 0 0 1;
     0 OmegaB 0 0];
 
-%Problem 1
-
+%% Problem 1
 %====== a ======%
 GammaA = [0 0; 1 0; 0 0; 0 1];
 GammaB = [0 0; 1 0; 0 0; 0 1];
@@ -69,14 +70,17 @@ for k = 1:T
     vk = (Sv*qk);
     yA(:,k) = H*xasingle_truth(:,k) + vk;
 end
-figure; hold on; grid on; grid minor;
+
+fig = figure; hold on; grid on; grid minor;
+set(fig, 'Position', [100 100 900 600]); 
+title('(b.i) Aircraft A Simulated Measurements')
+xlabel('time [s]'); ylabel('2D pseudo-measurements [m]')
+xticks([0 10 20 30 40])
+xticklabels({'0','5','10','15','20'})
 plot(1:1:40,yA(1,1:40),'-')
 plot(1:1:40,yA(2,1:40),'-')
 legend('yA_1','yA_2')
-xlabel('time [s]'); ylabel('2D pseudo-measurements [m]')
-title('(b.i) simulated measurements')
-xticks([0 10 20 30 40])
-xticklabels({'0','5','10','15','20'})
+saveas(fig,'ASEN5044_HW8_bi.png','png');
 
 %b)ii
 muA = [0, 85*cos(pi/4), 0, -85*sin(pi/4)]';
@@ -105,7 +109,9 @@ for k=1:(T-1)
     sigma(4,k+1) = 2*sqrt(P_plus(4,4,k+1));
 end
 
-figure; hold on;
+fig = figure; hold on;
+set(fig, 'Position', [100 100 900 600]); 
+sgtitle('(b.ii) Kalman Filter of Aircraft A')
 for i=1:4
     subplot(4,1,i); hold on; grid on; grid minor;
     plot(1:1:200,x_plus(i,:),'b-')
@@ -120,7 +126,7 @@ subplot(4,1,2); ylabel('\xiDot [m/s]')
 subplot(4,1,3); ylabel('eta [m]')
 subplot(4,1,4); ylabel('\etaDot [m/s]')
 legend('component estimate','+/- 2\sigma')
-suptitle('(b.ii) Kalman on aircraft A')
+saveas(fig,'ASEN5044_HW8_bii.png','png');
 
 
 %====== c ======%
@@ -196,7 +202,9 @@ for k=1:(T-1)
     sigma(8,k+1) = 2*sqrt(P_plus(8,8,k+1));
 end
 
-figure; hold on;
+fig = figure; hold on;
+set(fig, 'Position', [100 100 900 600]);
+sgtitle('(c.i) Position of Aircraft A and B')
 for i=1:4
     subplot(2,2,i); hold on; grid on; grid minor;
     plot(1:1:200, x_plus(2*i-1,:),'b-')
@@ -209,5 +217,4 @@ subplot(2,2,1); ylabel('\xi_A [m]'); legend('state component','+/- 2\sigma')
 subplot(2,2,2); ylabel('\eta_A [m]'); xlabel('time [s]');
 subplot(2,2,3); ylabel('\xi_B [m]'); xlabel('time [s]');
 subplot(2,2,4); ylabel('\eta_B [m]'); xlabel('time [s');
-suptitle('c)i position of aircraft A and B with time')
-
+saveas(fig,'ASEN5044_HW8_ci.png','png');
