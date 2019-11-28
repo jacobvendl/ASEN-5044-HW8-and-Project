@@ -81,7 +81,7 @@ plot(1:40,yA(1,1:40),'-','LineWidth',1.5)
 plot(1:40,yA(2,1:40),'-','LineWidth',1.5)
 xlim([1 40]);
 legend('yA_1 (East)','yA_2 (North)','Location','Northwest')
-saveas(fig,'ASEN5044_HW8_bi.png','png');
+saveas(fig,'ASEN5044_HW8_P1_bi.png','png');
 
 %b)i
 muA = [0, 85*cos(pi/4), 0, -85*sin(pi/4)]';
@@ -128,7 +128,7 @@ subplot(4,1,2); ylabel('\xiDot [m/s]')
 subplot(4,1,3); ylabel('\eta [m]')
 subplot(4,1,4); ylabel('\etaDot [m/s]')
 legend('Filter Estimate','+/- 2\sigma')
-saveas(fig,'ASEN5044_HW8_bii.png','png');
+saveas(fig,'ASEN5044_HW8_P1_bii.png','png');
 
 
 %====== c ======%
@@ -231,7 +231,7 @@ subplot(4,1,3); ylabel('\xi_B [m]');
 legend('\xi_B component Error','Zero Error Reference Mark')
 subplot(4,1,4); ylabel('\eta_B [m]'); xlabel('time [s]');
 legend('\eta_B component Error','Zero Error Reference Mark')
-saveas(fig,'ASEN5044_HW8_ci.png','png');
+saveas(fig,'ASEN5044_HW8_P1_ci.png','png');
 
 
 %c)ii 
@@ -294,7 +294,7 @@ subplot(4,1,3); ylabel('\xi_B [m]');
 legend('\xi_B component Error','Zero Error Reference Mark')
 subplot(4,1,4); ylabel('\eta_B [m]'); xlabel('time [s]');
 legend('\eta_B component Error','Zero Error Reference Mark')
-saveas(fig,'ASEN5044_HW8_cii.png','png');
+saveas(fig,'ASEN5044_HW8_P1_cii.png','png');
 
 
   
