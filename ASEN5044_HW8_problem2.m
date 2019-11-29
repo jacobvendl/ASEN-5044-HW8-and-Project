@@ -10,12 +10,17 @@ mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
+P = 2*pi*sqrt(r0^3/mu);
 
 %====== a ======%
+
+r0_nom = 6678;
+x1_nom = 6678;
+x3_nom = 0;
 Atil = [0, 1, 0, 0;
-        2*mu/r0^3, 0, 0, 0;
+        (-mu/r0_nom^3)+((3*mu*x1_nom^2)/r0_nom^5), 0, ((3*mu*x1_nom*x3_nom)/r0_nom^5), 0;
         0, 0, 0, 1;
-        0, 0, -mu/r0^3, 0];
+        ((3*mu*x1_nom*x3_nom)/r0_nom^5), 0, (-mu/r0^3)+((3*mu*x3_nom^3)/r0_nom^5), 0];
     
 Btil = [0, 0;
         1, 0;
@@ -27,14 +32,25 @@ Btil = [0, 0;
 
 
 %====== b ======%
+dt = 10;
+F = expm(dt*Atil);
 
+t_vec = 0:dt:P;
+updatex = x0;
+
+x_sim = [];
+for i = 1:length(t_vec)
+        x_sim = horzcat(x_sim, updatex);
+        updatex = F*updatex;
+end
+x_sim = x_sim';
 
 
 
 %====== c ======%
 % One Full Orbit Period
 % Simulate the Linearized DT dynamics
-P = 2*pi*sqrt(r0^3/mu);
+
 
 s0 = x0 + [1, 1, 0.1, 0.1]';
 opts = odeset('RelTol',1e-12,'AbsTol',1e-12);
@@ -50,24 +66,28 @@ sgtitle('Satellite State');
 
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(T,S(:,1),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,1),'r-','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('X position [km]');
 xlim([0 P]);
 
 subplot(2,2,2); hold on; grid on; grid minor;
 plot(T,S(:,2),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,2),'r-','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('Y position [km]');
 xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
 plot(T,S(:,3),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,3),'r-','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('X velocity [km/s]');
 xlim([0 P]);
 
 subplot(2,2,4); hold on; grid on; grid minor;
 plot(T,S(:,4),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,4),'r-','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('Y velocity [km/s]');
 xlim([0 P]);
