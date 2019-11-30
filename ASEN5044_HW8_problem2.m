@@ -43,7 +43,6 @@ dt = 10;
 % Nominalize the A matrix
 
 
-t_vec = 0:dt:P;
 updatex = x0;
 
 x_sim = [];
@@ -114,9 +113,9 @@ r0_nom = 6678;          % km
 dt = 10;
 
 F = expm(dt*[0, 1, 0, 0;
-        mu*(2*X^2-Y^2)*(r0_nom)^(-5/2), 0, (3*mu*X*Y)*(X^2+Y^2)^(-5/2), 0;
+        mu*(2*X^2-Y^2)*(r0_nom)^(-5), 0, (3*mu*X*Y)*(r0_nom)^(-5), 0;
         0, 0, 0, 1;
-        (3*mu*X*Y)*(X^2+Y^2)^(-5/2), 0, mu*(X^2-2*Y^2)*(r0_nom)^(-5/2), 0]);
+        (3*mu*X*Y)*(r0_nom)^(-5), 0, -mu*(X^2-2*Y^2)*(r0_nom)^(-5), 0]);
 
 end
 
