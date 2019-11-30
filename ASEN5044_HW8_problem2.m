@@ -33,7 +33,9 @@ Btil = [0, 0;
 
 %====== b ======%
 dt = 10;
-F = expm(dt*Atil);
+
+% Nominalize the A matrix
+
 
 t_vec = 0:dt:P;
 updatex = x0;
@@ -41,6 +43,7 @@ updatex = x0;
 x_sim = [];
 for i = 1:length(t_vec)
         x_sim = horzcat(x_sim, updatex);
+        F = F_variant(updatex(1),updatex(3),dt);
         updatex = F*updatex;
 end
 x_sim = x_sim';
@@ -96,7 +99,17 @@ saveas(fig,'ASEN5044_HW8_P2_sim.png','png');
 
 
 
+function [ F ] = F_variant(X,Y,dt)
 
+mu = 398600;        % km^3/s^2
+r0_nom = 6678;          % km
+
+F = expm(dt*[0, 1, 0, 0;
+        (-mu/r0_nom^3)+((3*mu*X^2)/r0_nom^5), 0, ((3*mu*X*Y)/r0_nom^5), 0;
+        0, 0, 0, 1;
+        ((3*mu*X*Y)/r0_nom^5), 0, (-mu/r0_nom^3)+((3*mu*Y^3)/r0_nom^5), 0]);
+
+end
 
 
 
@@ -117,3 +130,4 @@ yddot = -mu/r^3 * y;
 
 ds = [xdot, ydot, xddot, yddot]';
 end
+
