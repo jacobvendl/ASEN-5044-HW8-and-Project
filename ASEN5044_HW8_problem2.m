@@ -73,7 +73,7 @@ sgtitle('Satellite State');
 
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(T,S(:,1),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,1),'r-','LineWidth',1.5);
+plot(t_vec,x_sim(:,1),'r--','LineWidth',1.5);
 ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('X position [km]');
@@ -81,7 +81,7 @@ xlim([0 P]);
 
 subplot(2,2,2); hold on; grid on; grid minor;
 plot(T,S(:,2),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,2),'r-','LineWidth',1.5);
+plot(t_vec,x_sim(:,2),'r--','LineWidth',1.5);
 ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('Y position [km]');
@@ -89,7 +89,7 @@ xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
 plot(T,S(:,3),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,3),'r-','LineWidth',1.5);
+plot(t_vec,x_sim(:,3),'r--','LineWidth',1.5);
 ylim([-10 10]);
 xlabel('time [sec]');
 ylabel('X velocity [km/s]');
@@ -97,7 +97,7 @@ xlim([0 P]);
 
 subplot(2,2,4); hold on; grid on; grid minor;
 plot(T,S(:,4),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,4),'r-','LineWidth',1.5);
+plot(t_vec,x_sim(:,4),'r--','LineWidth',1.5);
 ylim([-10 10]);
 xlabel('time [sec]');
 ylabel('Y velocity [km/s]');
@@ -114,9 +114,9 @@ r0_nom = 6678;          % km
 dt = 10;
 
 F = expm(dt*[0, 1, 0, 0;
-        (-mu/r0_nom^3)+((3*mu*X^2)/r0_nom^5), 0, ((3*mu*X*Y)/r0_nom^5), 0;
+        (-mu/r0_nom^3), 0, 0, 0;
         0, 0, 0, 1;
-        ((3*mu*X*Y)/r0_nom^5), 0, (-mu/r0_nom^3)+((3*mu*Y^3)/r0_nom^5), 0]);
+        0, 0, (-mu/r0_nom^3), 0]);
 
 end
 
@@ -135,6 +135,6 @@ ydot = s(4);
 xddot = -mu/r^3 * x;
 yddot = -mu/r^3 * y;
 
-ds = [xdot, ydot, xddot, yddot]';
+ds = [xdot, xddot, ydot, yddot]';
 end
 
