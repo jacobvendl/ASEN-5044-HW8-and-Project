@@ -80,16 +80,16 @@ ylabel('X position [km]');
 xlim([0 P]);
 
 subplot(2,2,2); hold on; grid on; grid minor;
-plot(T,S(:,2),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,2),'r--','LineWidth',1.5);
+plot(T,S(:,3),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,3),'r--','LineWidth',1.5);
 ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('Y position [km]');
 xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
-plot(T,S(:,3),'b-','LineWidth',1.5);
-plot(t_vec,x_sim(:,3),'r--','LineWidth',1.5);
+plot(T,S(:,2),'b-','LineWidth',1.5);
+plot(t_vec,x_sim(:,2),'r--','LineWidth',1.5);
 ylim([-10 10]);
 xlabel('time [sec]');
 ylabel('X velocity [km/s]');
