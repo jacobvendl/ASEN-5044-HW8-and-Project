@@ -42,14 +42,15 @@ dt = 10;
 
 % Nominalize the A matrix
 
-
-updatex = x0;
-
-x_sim = [];
-for i = 1:length(t_vec)
-        x_sim = horzcat(x_sim, updatex);
-        F = F_variant(S(i,1),S(i,3));
-        updatex = F*updatex;
+dx = [0, 0, 0, 0]';
+x_sim = xo;
+for i = 2:length(t_vec)
+    
+    x_sim = horzcat(x_sim, updatex);
+    F = F_variant(S(i,1),S(i,3));
+    dx = F*dx;
+    updatex = updatex + dx;
+    dx = x_sim(:,i)-x_sim(:,i-1);
 end
 x_sim = x_sim';
 
@@ -64,7 +65,7 @@ x_sim = x_sim';
 
 
 fprintf('Plotting Satellite for 1 Orbit:\n');
-fprintf("x0 = [6678, 0, 0, 7.7258]' + [1, 1, 0.1, 0.1]'");
+fprintf("x0 = [6678, 0, 0, 7.7258]'");
 
 fig = figure('visible','on');
 set(fig,'Position',[100 100 900 600]);
@@ -73,15 +74,16 @@ sgtitle('Satellite State');
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(T,S(:,1),'b-','LineWidth',1.5);
 plot(t_vec,x_sim(:,1),'r--','LineWidth',1.5);
-ylim([-7000 7000]);
+ylim([-70000 70000]);
 xlabel('time [sec]');
 ylabel('X position [km]');
+legend('ODE45 DT Nonlinear Simulation (dt=10s)','DT Linearized Simulation (dt=10s)');
 xlim([0 P]);
 
 subplot(2,2,2); hold on; grid on; grid minor;
 plot(T,S(:,3),'b-','LineWidth',1.5);
 plot(t_vec,x_sim(:,3),'r--','LineWidth',1.5);
-ylim([-7000 7000]);
+ylim([-70000 70000]);
 xlabel('time [sec]');
 ylabel('Y position [km]');
 xlim([0 P]);
@@ -89,7 +91,7 @@ xlim([0 P]);
 subplot(2,2,3); hold on; grid on; grid minor;
 plot(T,S(:,2),'b-','LineWidth',1.5);
 plot(t_vec,x_sim(:,2),'r--','LineWidth',1.5);
-ylim([-10 10]);
+ylim([-100 100]);
 xlabel('time [sec]');
 ylabel('X velocity [km/s]');
 xlim([0 P]);
@@ -97,7 +99,7 @@ xlim([0 P]);
 subplot(2,2,4); hold on; grid on; grid minor;
 plot(T,S(:,4),'b-','LineWidth',1.5);
 plot(t_vec,x_sim(:,4),'r--','LineWidth',1.5);
-ylim([-10 10]);
+ylim([-100 100]);
 xlabel('time [sec]');
 ylabel('Y velocity [km/s]');
 xlim([0 P]);
@@ -113,9 +115,9 @@ r0_nom = 6678;          % km
 dt = 10;
 
 F = expm(dt*[0, 1, 0, 0;
-        mu*(2*X^2-Y^2)*(r0_nom)^(-5), 0, (3*mu*X*Y)*(r0_nom)^(-5), 0;
+        (-mu*(r0_nom)^(-3))+(3*mu*X^2*r0_nom^(-5)), 0, 3*mu*X*Y*r0_nom^(-5), 0;
         0, 0, 0, 1;
-        (3*mu*X*Y)*(r0_nom)^(-5), 0, -mu*(X^2-2*Y^2)*(r0_nom)^(-5), 0]);
+        (3*mu*X*Y)*r0_nom^(-5), 0, (-mu*r0_nom^(-3))+(3*mu*Y^2*r0_nom^(-5)), 0]);
 
 end
 
