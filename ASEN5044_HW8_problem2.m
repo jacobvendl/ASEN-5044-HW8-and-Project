@@ -227,19 +227,19 @@ set(fig,'Position',[100 100 900 600]);
 sgtitle('Satellite Measurement Model - Nonlinear and Linear');
 subplot(3,1,1); hold on; grid on; grid minor;
 for i=1:12
-    plot(dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i-2,:),'k--','LineWidth',1.5)
 end
 xlabel('Time [s]'); ylabel('\delta\rho^i [km]')
 
 subplot(3,1,2); hold on; grid on; grid minor;
 for i=1:12
-    plot(dy_lin(3*i-1,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i-1,:),'k--','LineWidth',1.5)
 end
 xlabel('Time [s]'); ylabel('\delta\rhoDot^i [km/s]')
 
 subplot(3,1,3); hold on; grid on; grid minor;
 for i=1:12
-    plot(dy_lin(3*i,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i,:),'k--','LineWidth',1.5)
 end
 legend('S1_{lin}','S2_{lin}','S3_{lin}','S4_{lin}','S5_{lin}'...
     ,'S6_{lin}','S7_{lin}','S8_{lin}','S9_{lin}'...
@@ -297,7 +297,7 @@ H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
    
 %Jake changes to first row of H
 H = [(X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2), 0, (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2), 0;
-            ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
+        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
         ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
         -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
         ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...

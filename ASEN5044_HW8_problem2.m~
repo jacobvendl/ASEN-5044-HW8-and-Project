@@ -9,7 +9,7 @@ close all; clear all; clc
 mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
 rE = 6378;          % km
-wE = 2*pi/86400     % rad/s
+wE = 2*pi/86400;    % rad/s
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
 P = 2*pi*sqrt(r0^3/mu);
@@ -63,7 +63,17 @@ for i=1:12 %stations
         %peform check at given time to see if s/c is visible
         phi(i,t) = atan2((Y(t)-Ys(i,t)),(X(t)-Xs(i,t)));
         thetaCheck = atan2(Ys(i,t),Xs(i,t));
-        if (thetaCheck-pi/2) <= phi(i,t) && phi(i,t) <= (thetaCheck+pi/2)
+        if (thetaCheck-pi/2) > (thetaCheck+pi/2)
+            upperBound = thetaCheck-pi/2;
+            lowerBound = thetaCheck+pi/2;
+        else
+            upperBound = thetaCheck+pi/2;
+            lowerBound = thetaCheck-pi/2;
+        end
+        if (lowerBound <= phi(i,t) && phi(i,t) <= upperBound) ...
+            || (lowerBound-2*pi <= phi(i,t) && phi(i,t)<=upperBound-2*pi)...
+            || (lowerBound+2*pi <= phi(i,t) && phi(i,t)<=upperBound+2*pi)
+            
             rho(i,t) = sqrt((X(t)-Xs(i,t))^2 + (Y(t)-Ys(i,t))^2);
             rhoDot(i,t) = ((X(t)-Xs(i,t))*(XD(t)-XDs(i,t)) + (Y(t)-Ys(i,t))*(YD(t)-YDs(i,t)))...
                 / rho(i,t);
@@ -73,12 +83,32 @@ for i=1:12 %stations
         end
     end
 end
-%test plots for measurement
-figure; hold on; grid on; grid minor
+
+%plots for measurement
+fig=figure; hold on; grid on; grid minor
 for i=1:12
     plot(T,rho(i,:)) 
 end
-legend('S1','S2','S3','S4','S%')
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\rho measurements by station'); xlabel('Time [s]'); ylabel('\rho [km]')
+saveas(fig,'ASEN5044_HW8_P2_rhoModel.png','png');
+
+fig=figure; hold on; grid on; grid minor
+for i=1:12
+    plot(T,rhoDot(i,:))
+end
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\rhoDot measurements by station'); xlabel('Time [s]'); ylabel('\rhoDot [km/s]')
+saveas(fig,'ASEN5044_HW8_P2_rhoDotModel.png','png');
+
+fig=figure; hold on; grid on; grid minor
+for i=1:12
+    plot(T,phi(i,:))
+end
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\phi measurements by station'); xlabel('Time [s]'); ylabel('\phi [rad]')
+saveas(fig,'ASEN5044_HW8_P2_phi.png','png');
+
 dt = 10;
 
 % Nominalize the A matrix
@@ -86,13 +116,26 @@ delta_x = [0 0 0 0]';
 
 dx = [0.01, 0.01, 0.01, 0.01]';
 dx_lin = [];
-for i = 1:length(t_vec)
-    dx_lin = horzcat(dx_lin, dx(:,i));
+dy_lin = zeros(36,length(T));
+for t = 1:length(t_vec)
+    dx_lin = horzcat(dx_lin, dx(:,t));
     %based on current position, calculate F
-    F = F_variant(dx_lin(1,i),dx_lin(3,i));
+    F = F_variant(dx_lin(1,t),dx_lin(3,t));
     
     %using that, figure out next dx
-    dx(:,i+1) = F*dx(:,i);
+    dx(:,t+1) = F*dx(:,t);
+    
+    %now find linearized measurement
+    for i=1:12
+        if ~isnan(rho(i,t))
+            H = H_variant(X(t),XD(t),Y(t),YD(t),Xs(i,t),XDs(i,t),Ys(i,t),YDs(i,t));
+            dy(:,t) = H*dx(:,t);
+            dy_lin(3*i-2:3*i,t) = dy(:,t);
+        else
+            dy_lin(3*i-2:3*i,t) = [nan nan nan]';
+        end
+    end
+    
 end
 dx_lin = dx_lin';
 
@@ -174,6 +217,66 @@ xlim([0 P]);
 saveas(fig,'ASEN5044_HW8_P2_lin.png','png');
 
 
+fig = figure('visible','on'); 
+set(fig,'Position',[100 100 900 600]);
+sgtitle('Satellite \rho Measurement - Nonlinear and Linear');
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,rho(i,:),'-','LineWidth',1.5)
+    plot(T,rho(i,:) + dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+end
+legend('S1','S1_{lin}','S2','S2_{lin}','S3','S3_{lin}','S4','S4_{lin}','S5','S5_{lin}'...
+    ,'S6','S6_{lin}','S7','S7_{lin}','S8','S8_{lin}','S9','S9_{lin}'...
+    ,'S10','S10_{lin}','S11','S11_{lin}','S12','S12_{lin}')
+xlabel('Time [s]'); ylabel('\rho [km]')
+
+subplot(3,1,2); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,rhoDot(i,:),'-','LineWidth',1.5)
+    plot(T,rhoDot(i,:) + dy_lin(3*i-1,:),'k--','LineWidth',1.5)
+end
+legend('S1','S1_{lin}','S2','S2_{lin}','S3','S3_{lin}','S4','S4_{lin}','S5','S5_{lin}'...
+    ,'S6','S6_{lin}','S7','S7_{lin}','S8','S8_{lin}','S9','S9_{lin}'...
+    ,'S10','S10_{lin}','S11','S11_{lin}','S12','S12_{lin}')
+xlabel('Time [s]'); ylabel('\rhoDot [km]')
+
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,phi(i,:),'-','LineWidth',1.5)
+    plot(T,r(i,:) + dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+end
+legend('S1','S1_{lin}','S2','S2_{lin}','S3','S3_{lin}','S4','S4_{lin}','S5','S5_{lin}'...
+    ,'S6','S6_{lin}','S7','S7_{lin}','S8','S8_{lin}','S9','S9_{lin}'...
+    ,'S10','S10_{lin}','S11','S11_{lin}','S12','S12_{lin}')
+xlabel('Time [s]'); ylabel('\rho [km]')
+
+saveas(fig,'ASEN5044_HW8_P2_rhoModel.png','png');
+
+
+
+
+%make movie simulation
+% fig=figure; hold on; grid on; grid minor;
+% for t=1:length(T)
+%     fig; hold on; grid on; grid minor;
+%     plot(X(t),Y(t),'b*')
+%     for i=1:12
+%         plot(Xs(i,t),Ys(i,t),'k.')
+%         if ~isnan(rho(i,t))
+%             line([Xs(i,t) X(t)],[Ys(i,t) Y(t)])
+%         end
+%     end
+%     
+%     axis equal; axis([-8000 8000 -8000 8000]); 
+%     xlabel('x');ylabel('y');title(sprintf('simulation, t=%.0fs',T(t)))
+%     M(t) = getframe(fig);
+%     clf(fig);
+% end
+% video = VideoWriter('visualization', 'Uncompressed AVI');
+% video.FrameRate = 60;
+% open(video)
+% writeVideo(video, M);
+% close(video);
 
 function [ F ] = F_variant(X,Y)
 
@@ -187,6 +290,28 @@ F = expm(dt*[0, 1, 0, 0;
         (3*mu*X*Y)*r0_nom^(-5), 0, (-mu*r0_nom^(-3))+(3*mu*Y^2*r0_nom^(-5)), 0]);
 end
 
+
+function [ H ] = H_variant(X,Xdot,Y,Ydot,Xs,Xsdot,Ys,Ysdot)
+
+H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
+        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
+        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
+        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
+        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
+   
+H = [(X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2), 0, (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2), 0;
+            ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
+        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
+        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
+        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
+    
+
+    
+end
 
 function [ ds ] = orbit_prop_func(t,s)
 
@@ -204,4 +329,9 @@ yddot = -mu/r^3 * y;
 
 ds = [xdot, xddot, ydot, yddot]';
 end
+
+
+
+
+
 
