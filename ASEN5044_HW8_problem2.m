@@ -9,7 +9,7 @@ close all; clear all; clc
 mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
 rE = 6378;          % km
-wE = 0;%2*pi/86400;    % rad/s
+wE = 2*pi/86400;    % rad/s
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
 P = 2*pi*sqrt(r0^3/mu);
@@ -83,30 +83,6 @@ for i=1:12 %stations
         end
     end
 end
-%test plots for measurement
-fig=figure; hold on; grid on; grid minor
-for i=1:12
-    plot(T,rho(i,:)) 
-end
-legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
-title('\rho measurements by station'); xlabel('Time [s]'); ylabel('\rho [km]')
-saveas(fig,'ASEN5044_HW8_P2_rhoModel.png','png');
-
-fig=figure; hold on; grid on; grid minor
-for i=1:12
-    plot(T,rhoDot(i,:))
-end
-legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
-title('\rhoDot measurements by station'); xlabel('Time [s]'); ylabel('\rhoDot [km/s]')
-saveas(fig,'ASEN5044_HW8_P2_rhoDotModel.png','png');
-
-fig=figure; hold on; grid on; grid minor
-for i=1:12
-    plot(T,phi(i,:))
-end
-legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
-title('\phi measurements by station'); xlabel('Time [s]'); ylabel('\phi [rad]')
-saveas(fig,'ASEN5044_HW8_P2_phi.png','png');
 
 dt = 10;
 
@@ -193,50 +169,108 @@ sgtitle('Satellite State - Linearized');
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(t_vec,dx_lin(:,1),'r--','LineWidth',1.5);
 xlabel('time [sec]');
-ylabel('dX position [km]');
+ylabel('\deltaX position [km]');
 
 subplot(2,2,2); hold on; grid on; grid minor;
 plot(t_vec,dx_lin(:,3),'r--','LineWidth',1.5);
 xlabel('time [sec]');
-ylabel('dY position [km]');
+ylabel('\deltaY position [km]');
 xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
 plot(t_vec,dx_lin(:,2),'r--','LineWidth',1.5);
 xlabel('time [sec]');
-ylabel('dX velocity [km/s]');
+ylabel('\deltaVX [km/s]');
 xlim([0 P]);
 
 subplot(2,2,4); hold on; grid on; grid minor;
 plot(t_vec,dx_lin(:,4),'r--','LineWidth',1.5);
 xlabel('time [sec]');
-ylabel('dY velocity [km/s]');
+ylabel('\deltaVY [km/s]');
 xlim([0 P]);
 
 saveas(fig,'ASEN5044_HW8_P2_lin.png','png');
 
-%make movie simulation
-fig=figure; hold on; grid on; grid minor;
-for t=1:length(T)
-    fig; hold on; grid on; grid minor;
-    plot(X(t),Y(t),'b*')
-    for i=1:12
-        plot(Xs(i,t),Ys(i,t),'k.')
-        if ~isnan(rho(i,t))
-            line([Xs(i,t) X(t)],[Ys(i,t) Y(t)])
-        end
-    end
-    
-    axis([-8000 8000 -8000 8000]); axis equal;
-    xlabel('x');ylabel('y');title(sprintf('simulation, t=%.0fs',T(t)))
-    M(t) = getframe(fig);
-    clf(fig);
+
+fig = figure('visible','on'); 
+set(fig,'Position',[100 100 900 600]);
+sgtitle('Satellite Measurement Model - Nonlinear and Linear');
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,rho(i,:),'-','LineWidth',1.5)
+    plot(T,rho(i,:) + dy_lin(3*i-2,:),'k--','LineWidth',1.5)
 end
-video = VideoWriter('visualization', 'Uncompressed AVI');
-video.FrameRate = 60;
-open(video)
-writeVideo(video, M);
-close(video);
+xlabel('Time [s]'); ylabel('\rho^i [km]')
+
+subplot(3,1,2); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,rhoDot(i,:),'-','LineWidth',1.5)
+    plot(T,rhoDot(i,:) + dy_lin(3*i-1,:),'k--','LineWidth',1.5)
+end
+xlabel('Time [s]'); ylabel('\rhoDot^i [km/s]')
+
+subplot(3,1,3); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,phi(i,:),'-','LineWidth',1.5)
+    plot(T,phi(i,:) + dy_lin(3*i,:),'k--','LineWidth',1.5)
+end
+legend('S1','S1_{lin}','S2','S2_{lin}','S3','S3_{lin}','S4','S4_{lin}','S5','S5_{lin}'...
+    ,'S6','S6_{lin}','S7','S7_{lin}','S8','S8_{lin}','S9','S9_{lin}'...
+    ,'S10','S10_{lin}','S11','S11_{lin}','S12','S12_{lin}')
+xlabel('Time [s]'); ylabel('\phi^i [rad]')
+
+saveas(fig,'ASEN5044_HW8_P2_MeasurementModel.png','png');
+
+
+fig = figure('visible','on'); 
+set(fig,'Position',[100 100 900 600]);
+sgtitle('Satellite Measurement Model - Nonlinear and Linear');
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+end
+xlabel('Time [s]'); ylabel('\delta\rho^i [km]')
+
+subplot(3,1,2); hold on; grid on; grid minor;
+for i=1:12
+    plot(dy_lin(3*i-1,:),'k--','LineWidth',1.5)
+end
+xlabel('Time [s]'); ylabel('\delta\rhoDot^i [km/s]')
+
+subplot(3,1,3); hold on; grid on; grid minor;
+for i=1:12
+    plot(dy_lin(3*i,:),'k--','LineWidth',1.5)
+end
+legend('S1_{lin}','S2_{lin}','S3_{lin}','S4_{lin}','S5_{lin}'...
+    ,'S6_{lin}','S7_{lin}','S8_{lin}','S9_{lin}'...
+    ,'S10_{lin}','S11_{lin}','S12_{lin}')
+xlabel('Time [s]'); ylabel('\delta\phi^i [rad]')
+
+saveas(fig,'ASEN5044_HW8_P2_LinearizedMeasurementModel.png','png');
+
+
+%make movie simulation
+% fig=figure; hold on; grid on; grid minor;
+% for t=1:length(T)
+%     fig; hold on; grid on; grid minor;
+%     plot(X(t),Y(t),'b*')
+%     for i=1:12
+%         plot(Xs(i,t),Ys(i,t),'k.')
+%         if ~isnan(rho(i,t))
+%             line([Xs(i,t) X(t)],[Ys(i,t) Y(t)])
+%         end
+%     end
+%     
+%     axis equal; axis([-8000 8000 -8000 8000]); 
+%     xlabel('x');ylabel('y');title(sprintf('simulation, t=%.0fs',T(t)))
+%     M(t) = getframe(fig);
+%     clf(fig);
+% end
+% video = VideoWriter('visualization', 'Uncompressed AVI');
+% video.FrameRate = 60;
+% open(video)
+% writeVideo(video, M);
+% close(video);
 
 function [ F ] = F_variant(X,Y)
 
@@ -260,7 +294,18 @@ H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
         ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
         ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
         ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
-        
+   
+%Jake changes to first row of H
+H = [(X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2), 0, (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2), 0;
+            ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
+        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
+        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
+        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
+    
+
+    
 end
 
 function [ ds ] = orbit_prop_func(t,s)
