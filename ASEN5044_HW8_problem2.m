@@ -224,16 +224,16 @@ set(fig,'Position',[100 100 900 600]);
 sgtitle(sprintf('Satellite Measurement Model - Linearized Deviations \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 subplot(3,1,2); hold on; grid on; grid minor;
 for i=1:12
-    plot(T,dy_lin(3*i-1,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i-1,:),'--','LineWidth',1.5)
 end
 xlabel('Time [s]'); ylabel('\delta\rhoDot^i [km/s]')
 subplot(3,1,3); hold on; grid on; grid minor;
 for i=1:12
-    plot(T,dy_lin(3*i,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i,:),'--','LineWidth',1.5)
 end
 subplot(3,1,1); hold on; grid on; grid minor;
 for i=1:12
-    plot(T,dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+    plot(T,dy_lin(3*i-2,:),'--','LineWidth',1.5)
 end
 xlabel('Time [s]'); ylabel('\delta\rho^i [km]')
 legend('S1_{lin}','S2_{lin}','S3_{lin}','S4_{lin}','S5_{lin}'...
