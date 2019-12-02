@@ -10,6 +10,7 @@ mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
 rE = 6378;          % km
 wE = 2*pi/86400;    % rad/s
+wE = 0;
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
 P = 2*pi*sqrt(r0^3/mu);
@@ -207,13 +208,16 @@ F = expm(dt*[0, 1, 0, 0;
 end
 
 
-function [ H ] = H_variant(X,Y)
+function [ H ] = H_variant(X,Xdot,Y,Ydot,Xs,Xsdot,Ys,Ysdot)
 
-mu = 398600;        % km^3/s^2
-r0_nom = 6678;          % km
-dt = 10;
-
-
+H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
+        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((X-Xs)/(sqrt((X-Xs)^2+(X-Xs)^2))),...
+        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
+        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
+        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
+        
 end
 
 function [ ds ] = orbit_prop_func(t,s)
