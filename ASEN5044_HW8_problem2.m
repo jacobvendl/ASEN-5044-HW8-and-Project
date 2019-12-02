@@ -86,10 +86,8 @@ end
 
 dt = 10;
 
-% Nominalize the A matrix
-delta_x = [0 0 0 0]';
-
-dx = [0.01, 0.01, 0.01, 0.01]';
+% Nominalize the A matrix. starting with initial perturbance
+dx = [1, 0.1, 1, 0.1]';
 dx_lin = [];
 dy_lin = zeros(36,length(T));
 for t = 1:length(t_vec)
@@ -124,7 +122,7 @@ fprintf("x0 = [6678, 0, 0, 7.7258]'");
 
 fig = figure('visible','on');
 set(fig,'Position',[100 100 900 600]);
-sgtitle('Satellite State');
+sgtitle(sprintf('Satellite State Model - Nonlinear and Linear Simulation \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(T,S(:,1),'b-','LineWidth',1.5);
@@ -164,7 +162,7 @@ saveas(fig,'ASEN5044_HW8_P2_sim.png','png');
 
 fig = figure('visible','on');
 set(fig,'Position',[100 100 900 600]);
-sgtitle('Satellite State - Linearized');
+sgtitle(sprintf('Satellite State Model - Linearized Deviations \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(t_vec,dx_lin(:,1),'r--','LineWidth',1.5);
@@ -194,14 +192,7 @@ saveas(fig,'ASEN5044_HW8_P2_lin.png','png');
 
 fig = figure('visible','on'); 
 set(fig,'Position',[100 100 900 600]);
-sgtitle('Satellite Measurement Model - Nonlinear and Linear');
-subplot(3,1,1); hold on; grid on; grid minor;
-for i=1:12
-    plot(T,rho(i,:),'-','LineWidth',1.5)
-    plot(T,rho(i,:) + dy_lin(3*i-2,:),'k--','LineWidth',1.5)
-end
-xlabel('Time [s]'); ylabel('\rho^i [km]')
-
+sgtitle(sprintf('Satellite Measurement Model - Nonlinear and Linear Simulation \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 subplot(3,1,2); hold on; grid on; grid minor;
 for i=1:12
     plot(T,rhoDot(i,:),'-','LineWidth',1.5)
@@ -214,6 +205,12 @@ for i=1:12
     plot(T,phi(i,:),'-','LineWidth',1.5)
     plot(T,phi(i,:) + dy_lin(3*i,:),'k--','LineWidth',1.5)
 end
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,rho(i,:),'-','LineWidth',1.5)
+    plot(T,rho(i,:) + dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+end
+xlabel('Time [s]'); ylabel('\rho^i [km]')
 legend('S1','S1_{lin}','S2','S2_{lin}','S3','S3_{lin}','S4','S4_{lin}','S5','S5_{lin}'...
     ,'S6','S6_{lin}','S7','S7_{lin}','S8','S8_{lin}','S9','S9_{lin}'...
     ,'S10','S10_{lin}','S11','S11_{lin}','S12','S12_{lin}')
@@ -224,23 +221,21 @@ saveas(fig,'ASEN5044_HW8_P2_MeasurementModel.png','png');
 
 fig = figure('visible','on'); 
 set(fig,'Position',[100 100 900 600]);
-sgtitle('Satellite Measurement Model - Nonlinear and Linear');
-subplot(3,1,1); hold on; grid on; grid minor;
-for i=1:12
-    plot(T,dy_lin(3*i-2,:),'k--','LineWidth',1.5)
-end
-xlabel('Time [s]'); ylabel('\delta\rho^i [km]')
-
+sgtitle(sprintf('Satellite Measurement Model - Linearized Deviations \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 subplot(3,1,2); hold on; grid on; grid minor;
 for i=1:12
     plot(T,dy_lin(3*i-1,:),'k--','LineWidth',1.5)
 end
 xlabel('Time [s]'); ylabel('\delta\rhoDot^i [km/s]')
-
 subplot(3,1,3); hold on; grid on; grid minor;
 for i=1:12
     plot(T,dy_lin(3*i,:),'k--','LineWidth',1.5)
 end
+subplot(3,1,1); hold on; grid on; grid minor;
+for i=1:12
+    plot(T,dy_lin(3*i-2,:),'k--','LineWidth',1.5)
+end
+xlabel('Time [s]'); ylabel('\delta\rho^i [km]')
 legend('S1_{lin}','S2_{lin}','S3_{lin}','S4_{lin}','S5_{lin}'...
     ,'S6_{lin}','S7_{lin}','S8_{lin}','S9_{lin}'...
     ,'S10_{lin}','S11_{lin}','S12_{lin}')
@@ -286,26 +281,26 @@ end
 
 
 function [ H ] = H_variant(X,Xdot,Y,Ydot,Xs,Xsdot,Ys,Ysdot)
-
-H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
-        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
-        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
-        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
-        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
-        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
-        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
-   
-%Jake changes to first row of H
-H = [(X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2), 0, (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2), 0;
-        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
-        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
-        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
-        ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
-        ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
-        ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
+%initialize H
+H = zeros(3,4);
     
+%first row
+H(1,1) = (X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2);
+H(1,2) = 0;
+H(1,3) = (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2);
+H(1,4) = 0;
 
+%second row
+H(2,1) = (Xdot-Xsdot)/sqrt((X-Xs)^2+(Y-Ys)^2) - (X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)) / ((X-Xs)^2+(Y-Ys)^2)^(3/2);
+H(2,3) = (Ydot-Ysdot)/sqrt((X-Xs)^2+(Y-Ys)^2) - (Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)) / ((X-Xs)^2+(Y-Ys)^2)^(3/2);
+H(2,2) = (X-Xs)/sqrt((X-Xs)^2+(Y-Ys)^2);
+H(2,4) = (Y-Ys)/sqrt((X-Xs)^2+(Y-Ys)^2);
     
+%third row
+H(3,1) = ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2));
+H(3,2) = 0;
+H(3,3) = ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2));
+H(3,4) = 0;
 end
 
 function [ ds ] = orbit_prop_func(t,s)
