@@ -8,6 +8,8 @@ close all; clear all; clc
 
 mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
+rE = 6378;          % km
+wE = 2*pi/86400;    % rad/s
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
 P = 2*pi*sqrt(r0^3/mu);
@@ -37,6 +39,64 @@ Btil = [0, 0;
 s0 = x0;
 opts = odeset('RelTol',1e-12,'AbsTol',1e-12);
 [T, S] = ode45(@(t,s)orbit_prop_func(t,s),t_vec,s0,opts);
+
+X=S(:,1); Y=S(:,3); XD=S(:,2); YD=S(:,4);
+Xs = zeros(12,length(T));
+Ys = zeros(12,length(T));
+XDs = zeros(12,length(T));
+YDs = zeros(12,length(T));
+rho = zeros(12,length(T));
+rhoDot = zeros(12,length(T));
+phi = zeros(12,length(T));
+%now simulate the measurements for all time
+for i=1:12 %stations
+    theta = (i-1)*pi/6;
+    for t=1:length(T) %loop through one orbit period
+        currentTime = T(t);
+        
+        %find station position and velocity
+        Xs(i,t) = rE*cos(wE*currentTime + theta);
+        Ys(i,t) = rE*sin(wE*currentTime + theta);
+        XDs(i,t) = -rE*wE*sin(wE*currentTime + theta);
+        YDs(i,t) = rE*wE*cos(wE*currentTime + theta);
+        
+        %peform check at given time to see if s/c is visible
+        phi(i,t) = atan2((Y(t)-Ys(i,t)),(X(t)-Xs(i,t)));
+        thetaCheck = atan2(Ys(i,t),Xs(i,t));
+        if (thetaCheck-pi/2) <= phi(i,t) && phi(i,t) <= (thetaCheck+pi/2)
+            rho(i,t) = sqrt((X(t)-Xs(i,t))^2 + (Y(t)-Ys(i,t))^2);
+            rhoDot(i,t) = ((X(t)-Xs(i,t))*(XD(t)-XDs(i,t)) + (Y(t)-Ys(i,t))*(YD(t)-YDs(i,t)))...
+                / rho(i,t);
+        else
+            rho(i,t) = nan;
+            rhoDot(i,t) = nan;
+        end
+    end
+end
+%test plots for measurement
+fig=figure; hold on; grid on; grid minor
+for i=1:12
+    plot(T,rho(i,:)) 
+end
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\rho measurements by station'); xlabel('Time [s]'); ylabel('\rho [km]')
+saveas(fig,'ASEN5044_HW8_P2_rhoModel.png','png');
+
+fig=figure; hold on; grid on; grid minor
+for i=1:12
+    plot(T,rhoDot(i,:))
+end
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\rhoDot measurements by station'); xlabel('Time [s]'); ylabel('\rhoDot [km/s]')
+saveas(fig,'ASEN5044_HW8_P2_rhoDotModel.png','png');
+
+fig=figure; hold on; grid on; grid minor
+for i=1:12
+    plot(T,phi(i,:))
+end
+legend('S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12')
+title('\phi measurements by station'); xlabel('Time [s]'); ylabel('\phi [rad]')
+saveas(fig,'ASEN5044_HW8_P2_phi.png','png');
 
 dt = 10;
 
