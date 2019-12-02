@@ -207,6 +207,15 @@ F = expm(dt*[0, 1, 0, 0;
 end
 
 
+function [ H ] = H_variant(X,Y)
+
+mu = 398600;        % km^3/s^2
+r0_nom = 6678;          % km
+dt = 10;
+
+
+end
+
 function [ ds ] = orbit_prop_func(t,s)
 
 mu = 398600; 
@@ -223,4 +232,3 @@ yddot = -mu/r^3 * y;
 
 ds = [xdot, xddot, ydot, yddot]';
 end
-
