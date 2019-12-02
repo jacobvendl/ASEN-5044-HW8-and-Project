@@ -43,7 +43,11 @@ dt = 10;
 % Nominalize the A matrix
 delta_x = [0 0 0 0]';
 
+<<<<<<< Updated upstream
 dx = [0.01, 0.001, 0.01, 0.001]';
+=======
+dx = [100, 0, 0, 0.1]';
+>>>>>>> Stashed changes
 dx_lin = [];
 for i = 1:length(t_vec)
     dx_lin = horzcat(dx_lin, dx(:,i));
