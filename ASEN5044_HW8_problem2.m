@@ -115,13 +115,26 @@ delta_x = [0 0 0 0]';
 
 dx = [0.01, 0.01, 0.01, 0.01]';
 dx_lin = [];
-for i = 1:length(t_vec)
-    dx_lin = horzcat(dx_lin, dx(:,i));
+dy_lin = zeros(36,length(T));
+for t = 1:length(t_vec)
+    dx_lin = horzcat(dx_lin, dx(:,t));
     %based on current position, calculate F
-    F = F_variant(dx_lin(1,i),dx_lin(3,i));
+    F = F_variant(dx_lin(1,t),dx_lin(3,t));
     
     %using that, figure out next dx
-    dx(:,i+1) = F*dx(:,i);
+    dx(:,t+1) = F*dx(:,t);
+    
+    %now find linearized measurement
+    for i=1:12
+        if ~isnan(rho(i,t))
+            H = H_variant(X(t),XD(t),Y(t),YD(t),Xs(i,t),XDs(i,t),Ys(i,t),YDs(i,t));
+            dy(:,t) = H*dx(:,t);
+            dy_lin(3*i-2:3*i,t) = dy(:,t);
+        else
+            dy_lin(3*i-2:3*i,t) = [nan nan nan]';
+        end
+    end
+    
 end
 dx_lin = dx_lin';
 
@@ -241,9 +254,9 @@ end
 function [ H ] = H_variant(X,Xdot,Y,Ydot,Xs,Xsdot,Ys,Ysdot)
 
 H = [2*sqrt(X-Xs), 0, 2*sqrt(Y-Ys), 0;
-        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
-        ((X-Xs)/(sqrt((X-Xs)^2+(X-Xs)^2))),...
-        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        ((Xdot-Xsdot)/(sqrt((X-Xs)^2+(Y-Ys)^2)))-((2*(X-Xs)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2)),...
+        ((X-Xs)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
+        -((2*(Y-Ys)*((X-Xs)*(Xdot-Xsdot)+(Y-Ys)*(Ydot-Ysdot)))/(sqrt((X-Xs)^2+(Y-Ys)^2)^2))+((Ydot-Ysdot)/(sqrt((X-Xs)^2+(Y-Ys)^2))),...
         ((Y-Ys)/(sqrt((X-Xs)^2+(Y-Ys)^2)));...
         ((Y-Ys)/((X-Xs)^2+(Y-Ys)^2)),0,...
         ((-X+Xs)/((X-Xs)^2+(Y-Ys)^2)),0];
