@@ -87,7 +87,8 @@ end
 dt = 10;
 
 % Nominalize the A matrix. starting with initial perturbance
-dx = [1, 0.1, 1, 0.1]';
+dx = [0.1, 0.01, 0.1, 0.01]';
+dx0 = dx;
 dx_lin = [];
 dy_lin = zeros(36,length(T));
 for t = 1:length(t_vec)
@@ -116,17 +117,21 @@ dx_lin = dx_lin';
 % One Full Orbit Period
 % Simulate the Linearized DT dynamics
 
+s0 = x0 + dx0;
+opts = odeset('RelTol',1e-12,'AbsTol',1e-12);
+[T_per, S_per] = ode45(@(t,s)orbit_prop_func(t,s),t_vec,s0,opts);
+
 
 fprintf('Plotting Satellite for 1 Orbit:\n');
 fprintf("x0 = [6678, 0, 0, 7.7258]'");
 
 fig = figure('visible','on');
 set(fig,'Position',[100 100 900 600]);
-sgtitle(sprintf('Satellite State Model - Nonlinear and Linear Simulation \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
+sgtitle(sprintf('Satellite State Model - Nonlinear and Linear Simulation \n dx0 = [%.2fkm %.2fkm/s %.2fkm %.2fkm/s]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 
 subplot(2,2,1); hold on; grid on; grid minor;
-plot(T,S(:,1),'b-','LineWidth',1.5);
-plot(t_vec,S(:,1)+dx_lin(:,1),'r--','LineWidth',1.5);
+plot(T_per,S_per(:,1),'b-','LineWidth',1.2);
+plot(t_vec,S(:,1)+dx_lin(:,1),'r--','LineWidth',1.2);
 ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('X position [km]');
@@ -134,7 +139,7 @@ legend('ODE45 DT Nonlinear Simulation (dt=10s)','DT Linearized Simulation (dt=10
 xlim([0 P]);
 
 subplot(2,2,2); hold on; grid on; grid minor;
-plot(T,S(:,3),'b-','LineWidth',1.5);
+plot(T_per,S_per(:,3),'b-','LineWidth',1.5);
 plot(t_vec,S(:,3)+dx_lin(:,3),'r--','LineWidth',1.5);
 ylim([-7000 7000]);
 xlabel('time [sec]');
@@ -142,7 +147,7 @@ ylabel('Y position [km]');
 xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
-plot(T,S(:,2),'b-','LineWidth',1.5);
+plot(T_per,S_per(:,2),'b-','LineWidth',1.5);
 plot(t_vec,S(:,2)+dx_lin(:,2),'r--','LineWidth',1.5);
 ylim([-10 10]);
 xlabel('time [sec]');
@@ -150,7 +155,7 @@ ylabel('X velocity [km/s]');
 xlim([0 P]);
 
 subplot(2,2,4); hold on; grid on; grid minor;
-plot(T,S(:,4),'b-','LineWidth',1.5);
+plot(T_per,S_per(:,4),'b-','LineWidth',1.5);
 plot(t_vec,S(:,4)+dx_lin(:,4),'r--','LineWidth',1.5);
 ylim([-10 10]);
 xlabel('time [sec]');
@@ -162,26 +167,32 @@ saveas(fig,'ASEN5044_HW8_P2_sim.png','png');
 
 fig = figure('visible','on');
 set(fig,'Position',[100 100 900 600]);
-sgtitle(sprintf('Satellite State Model - Linearized Deviations \n dx0 = [%.2f %.2f %.2f %.2f]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
+sgtitle(sprintf('Satellite State Model - Linearized Deviations \n dx0 = [%.2fkm %.2fkm/s %.2fkm %.2fkm/s]',dx(1,1),dx(2,1),dx(3,1),dx(4,1)));
 
 subplot(2,2,1); hold on; grid on; grid minor;
+plot(t_vec,S_per(:,1)-S(:,1),'b-','LineWidth',1.5);
 plot(t_vec,dx_lin(:,1),'r--','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('\deltaX position [km]');
+legend('ODE45 DT Nonlinear Simulation (dt=10s)','DT Linearized Simulation (dt=10s)','Location','Southwest');
+
 
 subplot(2,2,2); hold on; grid on; grid minor;
+plot(t_vec,S_per(:,3)-S(:,3),'b-','LineWidth',1.5);
 plot(t_vec,dx_lin(:,3),'r--','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('\deltaY position [km]');
 xlim([0 P]);
 
 subplot(2,2,3); hold on; grid on; grid minor;
+plot(t_vec,S_per(:,2)-S(:,2),'b-','LineWidth',1.5);
 plot(t_vec,dx_lin(:,2),'r--','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('\deltaVX [km/s]');
 xlim([0 P]);
 
 subplot(2,2,4); hold on; grid on; grid minor;
+plot(t_vec,S_per(:,4)-S(:,4),'b-','LineWidth',1.5);
 plot(t_vec,dx_lin(:,4),'r--','LineWidth',1.5);
 xlabel('time [sec]');
 ylabel('\deltaVY [km/s]');
