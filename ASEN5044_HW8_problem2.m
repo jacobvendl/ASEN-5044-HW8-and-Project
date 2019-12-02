@@ -43,7 +43,7 @@ dt = 10;
 % Nominalize the A matrix
 delta_x = [0 0 0 0]';
 
-dx = [100, 0, 0, 1]';
+dx = [0.01, 0.001, 0.01, 0.001]';
 dx_lin = [];
 for i = 1:length(t_vec)
     dx_lin = horzcat(dx_lin, dx(:,i));
@@ -70,7 +70,7 @@ sgtitle('Satellite State');
 subplot(2,2,1); hold on; grid on; grid minor;
 plot(T,S(:,1),'b-','LineWidth',1.5);
 plot(t_vec,S(:,1)+dx_lin(:,1),'r--','LineWidth',1.5);
-ylim([-70000 70000]);
+ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('X position [km]');
 legend('ODE45 DT Nonlinear Simulation (dt=10s)','DT Linearized Simulation (dt=10s)');
@@ -79,7 +79,7 @@ xlim([0 P]);
 subplot(2,2,2); hold on; grid on; grid minor;
 plot(T,S(:,3),'b-','LineWidth',1.5);
 plot(t_vec,S(:,3)+dx_lin(:,3),'r--','LineWidth',1.5);
-ylim([-70000 70000]);
+ylim([-7000 7000]);
 xlabel('time [sec]');
 ylabel('Y position [km]');
 xlim([0 P]);
@@ -87,7 +87,7 @@ xlim([0 P]);
 subplot(2,2,3); hold on; grid on; grid minor;
 plot(T,S(:,2),'b-','LineWidth',1.5);
 plot(t_vec,S(:,2)+dx_lin(:,2),'r--','LineWidth',1.5);
-ylim([-100 100]);
+ylim([-10 10]);
 xlabel('time [sec]');
 ylabel('X velocity [km/s]');
 xlim([0 P]);
@@ -95,12 +95,42 @@ xlim([0 P]);
 subplot(2,2,4); hold on; grid on; grid minor;
 plot(T,S(:,4),'b-','LineWidth',1.5);
 plot(t_vec,S(:,4)+dx_lin(:,4),'r--','LineWidth',1.5);
-ylim([-100 100]);
+ylim([-10 10]);
 xlabel('time [sec]');
 ylabel('Y velocity [km/s]');
 xlim([0 P]);
 
 saveas(fig,'ASEN5044_HW8_P2_sim.png','png');
+
+
+fig = figure('visible','on');
+set(fig,'Position',[100 100 900 600]);
+sgtitle('Satellite State - Linearized');
+
+subplot(2,2,1); hold on; grid on; grid minor;
+plot(t_vec,dx_lin(:,1),'r--','LineWidth',1.5);
+xlabel('time [sec]');
+ylabel('dX position [km]');
+
+subplot(2,2,2); hold on; grid on; grid minor;
+plot(t_vec,dx_lin(:,3),'r--','LineWidth',1.5);
+xlabel('time [sec]');
+ylabel('dY position [km]');
+xlim([0 P]);
+
+subplot(2,2,3); hold on; grid on; grid minor;
+plot(t_vec,dx_lin(:,2),'r--','LineWidth',1.5);
+xlabel('time [sec]');
+ylabel('dX velocity [km/s]');
+xlim([0 P]);
+
+subplot(2,2,4); hold on; grid on; grid minor;
+plot(t_vec,dx_lin(:,4),'r--','LineWidth',1.5);
+xlabel('time [sec]');
+ylabel('dY velocity [km/s]');
+xlim([0 P]);
+
+saveas(fig,'ASEN5044_HW8_P2_lin.png','png');
 
 
 
