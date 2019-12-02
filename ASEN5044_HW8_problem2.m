@@ -9,8 +9,7 @@ close all; clear all; clc
 mu = 398600;        % km^3/s^2
 r0 = 6678;          % km
 rE = 6378;          % km
-wE = 2*pi/86400;    % rad/s
-wE = 0;
+wE = 0;%2*pi/86400;    % rad/s
 
 x0 = [6678, 0, 0, r0*sqrt(mu/r0^3)]';
 P = 2*pi*sqrt(r0^3/mu);
@@ -64,7 +63,15 @@ for i=1:12 %stations
         %peform check at given time to see if s/c is visible
         phi(i,t) = atan2((Y(t)-Ys(i,t)),(X(t)-Xs(i,t)));
         thetaCheck = atan2(Ys(i,t),Xs(i,t));
-        if (thetaCheck-pi/2) <= phi(i,t) && phi(i,t) <= (thetaCheck+pi/2)
+        if (thetaCheck-pi/2) > (thetaCheck+pi/2)
+            upperBound = thetaCheck-pi/2;
+            lowerBound = thetaCheck+pi/2;
+        else
+            upperBound = thetaCheck+pi/2;
+            lowerBound = thetaCheck-pi/2;
+        end
+        if lowerBound <= phi(i,t) && phi(i,t) <= upperBound...
+            
             rho(i,t) = sqrt((X(t)-Xs(i,t))^2 + (Y(t)-Ys(i,t))^2);
             rhoDot(i,t) = ((X(t)-Xs(i,t))*(XD(t)-XDs(i,t)) + (Y(t)-Ys(i,t))*(YD(t)-YDs(i,t)))...
                 / rho(i,t);
@@ -193,7 +200,28 @@ xlim([0 P]);
 
 saveas(fig,'ASEN5044_HW8_P2_lin.png','png');
 
-
+%make movie simulation
+fig=figure; hold on; grid on; grid minor;
+for t=1:length(T)
+    fig; hold on; grid on; grid minor;
+    plot(X(t),Y(t),'b*')
+    for i=1:12
+        plot(Xs(i,t),Ys(i,t),'k.')
+        if ~isnan(rho(i,t))
+            line([Xs(i,t) X(t)],[Ys(i,t) Y(t)])
+        end
+    end
+    
+    axis([-8000 8000 -8000 8000]); axis equal;
+    xlabel('x');ylabel('y');title(sprintf('simulation, t=%.0fs',T(t)))
+    M(t) = getframe(fig);
+    clf(fig);
+end
+video = VideoWriter('visualization', 'Uncompressed AVI');
+video.FrameRate = 60;
+open(video)
+writeVideo(video, M);
+close(video);
 
 function [ F ] = F_variant(X,Y)
 
@@ -236,3 +264,9 @@ yddot = -mu/r^3 * y;
 
 ds = [xdot, xddot, ydot, yddot]';
 end
+
+
+
+
+
+
